@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "371009165891",
+    "firebase_url": "https://meditation-c8d0a.firebaseio.com",
+    "project_id": "meditation-c8d0a",
+    "storage_bucket": "meditation-c8d0a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:371009165891:android:84e90465a6558c685352f6",
+        "android_client_info": {
+          "package_name": "io.github.jirayusgoodlife.meditation"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "371009165891-rcauhtufuov2rq5un6tbr5dih2eal8sa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.github.jirayusgoodlife.meditation",
+            "certificate_hash": "5c86315dc37224a7c5b770abf99f85caee8bc4a6"
+          }
+        },
+        {
+          "client_id": "371009165891-dqe25pno7ucrknihvsqc32rvgqm9flre.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjfT0bvX2tFIAeFlAbb4HrnT01UfbKPU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "371009165891-dqe25pno7ucrknihvsqc32rvgqm9flre.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
