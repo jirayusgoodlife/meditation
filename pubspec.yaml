@@ -31,7 +31,8 @@ dependencies:
   shared_preferences: ^0.5.3+4
 
   # line auth
-  #flutter_line_login: ^0.2.0 //error kotlin 2 
+  flutter_line_login: ^0.2.0 
+  #//error kotlin 2 
 
   # player sound
   
