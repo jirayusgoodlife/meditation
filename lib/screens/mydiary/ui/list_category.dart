@@ -220,7 +220,7 @@ class MealsView extends StatelessWidget {
                                     child: Padding(
                                       padding: const EdgeInsets.all(6.0),
                                       child: Icon(
-                                        Icons.add,
+                                        Icons.audiotrack,
                                         color: HexColor(mealsListData.endColor),
                                         size: 24,
                                       ),
@@ -243,15 +243,15 @@ class MealsView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: 0,
-                    left: 8,
-                    child: SizedBox(
-                      width: 80,
-                      height: 80,
-                      child: Image.asset(mealsListData.imagePath),
-                    ),
-                  )
+                  // Positioned(
+                  //   top: 0,
+                  //   left: 8,
+                  //   child: SizedBox(
+                  //     width: 80,
+                  //     height: 80,
+                  //     child: Image.asset(mealsListData.imagePath),
+                  //   ),
+                  // )
                 ],
               ),
             ),

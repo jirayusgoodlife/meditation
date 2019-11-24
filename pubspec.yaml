@@ -61,26 +61,26 @@ flutter:
   fonts:
     - family: Prompt
       fonts:
-        - asset: assets\fonts\Prompt\Prompt-Regular.ttf
-        - asset: assets\fonts\Prompt\Prompt-Italic.ttf
+        - asset: assets/fonts/Prompt/Prompt-Regular.ttf
+        - asset: assets/fonts/Prompt/Prompt-Italic.ttf
           style: italic
-        - asset: assets\fonts\Prompt\Prompt-Light.ttf
+        - asset: assets/fonts/Prompt/Prompt-Light.ttf 
           weight: 200
-        - asset: assets\fonts\Prompt\Prompt-LightItalic.ttf
+        - asset: assets/fonts/Prompt/Prompt-LightItalic.ttf
           weight: 200
           style: italic
-        - asset: assets\fonts\Prompt\Prompt-Medium.ttf
+        - asset: assets/fonts/Prompt/Prompt-Medium.ttf
           weight: 300
-        - asset: assets\fonts\Prompt\Prompt-MediumItalic.ttf
+        - asset: assets/fonts/Prompt/Prompt-MediumItalic.ttf
           weight: 300
           style: italic
-        - asset: assets\fonts\Prompt\Prompt-SemiBold.ttf
+        - asset: assets/fonts/Prompt/Prompt-SemiBold.ttf
           weight: 600
-        - asset: assets\fonts\Prompt\Prompt-SemiBoldItalic.ttf
+        - asset: assets/fonts/Prompt/Prompt-SemiBoldItalic.ttf
           weight: 600
           style: italic
-        - asset: assets\fonts\Prompt\Prompt-Bold.ttf
+        - asset: assets/fonts/Prompt/Prompt-Bold.ttf
           weight: 700
-        - asset: assets\fonts\Prompt\Prompt-BoldItalic.ttf
+        - asset: assets/fonts/Prompt/Prompt-BoldItalic.ttf
           weight: 700
           style: italic
