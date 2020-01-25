@@ -2,6 +2,18 @@
 
 A new Flutter application.
 
+## Checklist
+
+[ ] 1. แนะนำ การทำสมาธิ (Meditation Guide)
+[ ] 2. ฝึกสมาธิแต่ละระดับแล้วเก็บสถิติไว้
+[ ] 3. เปลี่ยนภาพพื้นหลัง
+[ ] 4. เสียงเพลงและเสียงดนตรี
+[ ] 5. ตั้งเวลาให้แอปพลิเคชนั ปิดเอง (Application Exit Timer)
+[ ] 6. ฝึกการหายใจเข้าและออก
+[ ] 7. ส่งคำเชิญผ่าน Social Media
+[ ] 8. การให้คะแนนความพึงพอใจของตัวเองที่มีต่อการฝึกแต่ละครั้ง
+
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
