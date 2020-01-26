@@ -4,7 +4,7 @@ A new Flutter application.
 
 ## Checklist
 
-- [x] แนะนำ การทำสมาธิ (Meditation Guide)
+- [ ] แนะนำ การทำสมาธิ (Meditation Guide)
 - [ ] ฝึกสมาธิแต่ละระดับแล้วเก็บสถิติไว้
 - [ ] เปลี่ยนภาพพื้นหลัง
 - [ ] เสียงเพลงและเสียงดนตรี
