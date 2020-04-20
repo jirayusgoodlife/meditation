@@ -15,6 +15,6 @@
     <string name="title"></string>
     <string name="desc"></string>
     <string name="pause">หยุด</string>
-    <string name="next"><ฒ>/string>
+    <string name="next"></string>
     <string name="stop">เล่น</string>
 </resources>
