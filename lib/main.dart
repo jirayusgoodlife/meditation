@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meditation/theme/primarytheme.dart';
+import 'package:meditation/themes/primarytheme.dart';
 
 void main() {
    runApp(new MaterialApp(
