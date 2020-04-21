@@ -29,6 +29,7 @@ pubspec.lock
 .pub-cache/
 .pub/
 /build/
+.flutter-plugins-dependencies
 
 # Android related
 **/android/**/gradle-wrapper.jar
@@ -71,7 +72,4 @@ pubspec.lock
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
-pubspec.lock
-.flutter-plugins-dependencies
-.flutter-plugins-dependencies
-.flutter-plugins-dependencies
+
