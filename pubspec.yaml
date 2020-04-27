@@ -9,6 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
+  # bloc
+  bloc: ^4.0.0
+  flutter_bloc: ^4.0.0
 
   # firebase
   firebase_core: ^0.4.2
@@ -22,8 +26,9 @@ dependencies:
   # font
   font_awesome_flutter: ^8.5.0
 
-  # shared_preferences
+  # storage management
   shared_preferences: ^0.5.3+4
+  path_provider: ^1.1.0
 
   # google auth
   google_sign_in: ^4.0.14
@@ -34,6 +39,8 @@ dependencies:
   # welcome intro slider
   intro_slider: ^2.2.9
 
+  # splash screen
+  splashscreen: ^1.2.0
 
 
 dev_dependencies:
@@ -48,7 +55,6 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/fitness_app/
 
   fonts:
     - family: Prompt

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meditation/themes/primarytheme.dart';
+import 'package:meditation/theme/primary.dart';
+import 'package:meditation/views/splash/loadingpage.dart';
 
 void main() {
    runApp(new MaterialApp(
@@ -8,6 +9,8 @@ void main() {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: PrimaryTheme.textTheme,
+        platform: TargetPlatform.iOS,
       ),
+      home: LoadingPage(),
     ));
 }
