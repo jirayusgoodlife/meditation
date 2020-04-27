@@ -25,30 +25,30 @@ class IntroScreenState extends State<IntroScreen> {
 
     slides.add(
       new Slide(
-        title: "SCHOOL",
+        title: "ฝึกตน",
         styleTitle: PrimaryTheme.headline,
         description:
-            "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa.",
+            "",
         styleDescription: PrimaryTheme.body1,
         pathImage: "assets/images/logo_app.png",
       ),
     );
     slides.add(
       new Slide(
-        title: "MUSEUM",
+        title: "ผ่อนคลาย",
         styleTitle:  PrimaryTheme.headline,
         description:
-            "Ye indulgence unreserved connection alteration appearance",
+            "",
         styleDescription: PrimaryTheme.body1,
         pathImage: "assets/images/logo_app.png",
       ),
     );
     slides.add(
       new Slide(
-        title: "COFFEE SHOP",
+        title: "เริ่มกันเลย",
         styleTitle: PrimaryTheme.headline,
         description:
-            "Much evil soon high in hope do view. Out may few northward believing attempted. Yet timed being songs marry one defer men our. Although finished blessing do of",
+            "",
         styleDescription: PrimaryTheme.body1,
         pathImage: "assets/images/logo_app.png",
       ),
@@ -58,7 +58,8 @@ class IntroScreenState extends State<IntroScreen> {
   void onDonePress() async {
     // Back to the first tab
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool("see_intro", true)
+    prefs.setBool("see_intro", true);
+    print(prefs.getBool("see_intro"));  
      Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => NavigationHomeScreen()),

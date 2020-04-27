@@ -15,10 +15,15 @@ class LoadingPage extends StatefulWidget {
 class _LoadingPageState extends State<LoadingPage> {
 
  StatefulWidget redirect = IntroScreen();
-_asyncMethod() async {
+       
+selectHome() async {
    SharedPreferences prefs = await SharedPreferences.getInstance();
-   if(prefs.getBool("see_intro") ?? false){
-     redirect = NavigationHomeScreen();
+
+   if(prefs.getBool("see_intro")){
+     setState(() {
+       redirect = NavigationHomeScreen();
+     });
+     
    }
 
 }
@@ -26,14 +31,14 @@ _asyncMethod() async {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_){
-      _asyncMethod();
+      selectHome();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return SplashScreen(
-        seconds: 3,
+        seconds: 2,
         navigateAfterSeconds: redirect ,
         title: Text(
           'เจริญสติ',
