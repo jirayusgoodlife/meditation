@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:meditation/theme/primary.dart';
 import 'package:meditation/models/menu_navigation.dart';
-
-// rount
+import 'package:meditation/views/login/loginscreen.dart';
 import 'package:meditation/views/main/homescreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class NavigationHomeScreen extends StatefulWidget {
   @override
@@ -15,11 +17,26 @@ class _NavigationHomeScreenState extends State<NavigationHomeScreen> {
   DrawerIndex drawerIndex;
   AnimationController sliderAnimationController;
 
+  checkAuth() async {
+    
+    final FirebaseUser user = await _auth.currentUser();
+      if (user == null) {
+        Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SignInPage()),
+      );
+      } 
+  }
+
   @override
-  void initState() {
-    drawerIndex = DrawerIndex.HOME;
-    screenView = HomeScreen(); //first view
+  void initState() {    
     super.initState();
+    //check auth
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      checkAuth();
+    });
+    drawerIndex = DrawerIndex.HOME;
+    screenView = HomeScreen();
   }
 
   @override

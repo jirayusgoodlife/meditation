@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intro_slider/dot_animation_enum.dart';
 import 'package:intro_slider/intro_slider.dart';
 import 'package:intro_slider/slide_object.dart';
+import 'package:meditation/views/login/loginscreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:meditation/theme/primary.dart';
 import 'package:meditation/views/main/navigation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class IntroScreen extends StatefulWidget {
   IntroScreen({Key key}) : super(key: key);
@@ -60,10 +63,18 @@ class IntroScreenState extends State<IntroScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("see_intro", true);
     print(prefs.getBool("see_intro"));  
+    final FirebaseUser user = await _auth.currentUser();
+    if (user == null) {
      Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => NavigationHomeScreen()),
-    );
+        context,
+        MaterialPageRoute(builder: (context) => SignInPage()),
+      );
+    }else{
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => NavigationHomeScreen()),
+      );
+    }
   }
 
   void onTabChangeCompleted(index) {

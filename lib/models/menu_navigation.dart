@@ -29,13 +29,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
         icon: new Icon(Icons.home),
       ),
       DrawerList(
-        index: DrawerIndex.FEEDBACK,
-        labelName: 'FeedBack',
-        icon: new Icon(Icons.help),
-      ),
-      DrawerList(
         index: DrawerIndex.SHARE,
-        labelName: 'Rate the app',
+        labelName: 'Share',
         icon: new Icon(Icons.share),
       ),
       DrawerList(
@@ -74,15 +69,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                       return new ScaleTransition(
                         scale: new AlwaysStoppedAnimation(
                             1.0 - (widget.iconAnimationController.value) * 0.2),
-                        child: RotationTransition(
-                          turns: new AlwaysStoppedAnimation(Tween(
-                                      begin: 0.0, end: 24.0)
-                                  .animate(CurvedAnimation(
-                                      parent: widget.iconAnimationController,
-                                      curve: Curves.fastOutSlowIn))
-                                  .value /
-                              360),
-                          child: Container(
+                        child: Container(
                             height: 120,
                             width: 120,
                             decoration: BoxDecoration(
@@ -99,15 +86,14 @@ class _HomeDrawerState extends State<HomeDrawer> {
                                   BorderRadius.all(Radius.circular(60.0)),
                               child: Image.asset("assets/images/userImage.png"),
                             ),
-                          ),
-                        ),
-                      );
+                            )
+                        );
                     },
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 8, left: 4),
                     child: Text(
-                      "Chris Hemsworth",
+                      "ไม่ระบุตัวตน",
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: PrimaryTheme.grey,
