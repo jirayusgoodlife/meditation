@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:meditation/theme/primary.dart';
 import 'package:meditation/models/menu_navigation.dart';
 import 'package:meditation/views/login/loginscreen.dart';
+import 'package:meditation/views/main/aboutus.dart';
 import 'package:meditation/views/main/homescreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:meditation/views/main/sharescreen.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -22,9 +24,9 @@ class _NavigationHomeScreenState extends State<NavigationHomeScreen> {
     final FirebaseUser user = await _auth.currentUser();
       if (user == null) {
         Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SignInPage()),
-      );
+          context,
+          MaterialPageRoute(builder: (context) => SignInPage()),
+        );
       } 
   }
 
@@ -32,7 +34,7 @@ class _NavigationHomeScreenState extends State<NavigationHomeScreen> {
   void initState() {    
     super.initState();
     //check auth
-    WidgetsBinding.instance.addPostFrameCallback((_){
+    Future.delayed(Duration.zero,() {
       checkAuth();
     });
     drawerIndex = DrawerIndex.HOME;
@@ -73,7 +75,7 @@ class _NavigationHomeScreenState extends State<NavigationHomeScreen> {
         });
       } else if (drawerIndex == DrawerIndex.SHARE) {
         setState(() {
-          screenView = HomeScreen();
+          screenView = ShareScreen();
         });
 
       }  else if (drawerIndex == DrawerIndex.FEEDBACK) {
@@ -88,7 +90,7 @@ class _NavigationHomeScreenState extends State<NavigationHomeScreen> {
 
       } else if (drawerIndex == DrawerIndex.ABOUT) {
         setState(() {
-          screenView = HomeScreen();
+          screenView = AboutUsScreen();
         });
 
       } else {

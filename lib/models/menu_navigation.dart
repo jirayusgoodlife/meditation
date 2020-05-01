@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:meditation/theme/primary.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:meditation/views/login/loginscreen.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class HomeDrawer extends StatefulWidget {
   final AnimationController iconAnimationController;
@@ -14,33 +19,52 @@ class HomeDrawer extends StatefulWidget {
 }
 
 class _HomeDrawerState extends State<HomeDrawer> {
+
   List<DrawerList> drawerList;
+  String name = "";
+  Image picURL = Image.asset("assets/images/userImage.png");
+
   @override
   void initState() {
-    setdDrawerListArray();
-    super.initState();
+    super.initState();   
   }
 
-  void setdDrawerListArray() {
+  _getUserDetail(BuildContext context) async {
+    final FirebaseUser user = await _auth.currentUser();
+    if(user == null)
+      return;
+    if(user.displayName!= null && user.displayName != ""){
+      setState(() {
+        name = user.displayName;
+      });
+    }
+    if(user.photoUrl != null && user.photoUrl != ""){
+      setState(() {
+        picURL = Image.network(user.photoUrl);
+      });
+    }
+  }
+
+  void setdDrawerListArray(BuildContext context) {
     drawerList = [
       DrawerList(
         index: DrawerIndex.HOME,
-        labelName: 'Home',
+        labelName: FlutterI18n.translate(context, 'menu.home'),
         icon: new Icon(Icons.home),
       ),
       DrawerList(
         index: DrawerIndex.SHARE,
-        labelName: 'Share',
+        labelName: FlutterI18n.translate(context, 'menu.share'),
         icon: new Icon(Icons.share),
       ),
       DrawerList(
         index: DrawerIndex.SETTING,
-        labelName: 'Setting',
+        labelName: FlutterI18n.translate(context, 'menu.setting'),
         icon: new Icon(Icons.settings),
       ),
       DrawerList(
         index: DrawerIndex.ABOUT,
-        labelName: 'About Us',
+        labelName: FlutterI18n.translate(context, 'menu.about'),
         icon: new Icon(Icons.info),
       ),
     ];
@@ -48,6 +72,10 @@ class _HomeDrawerState extends State<HomeDrawer> {
 
   @override
   Widget build(BuildContext context) {
+
+    _getUserDetail(context);
+    setdDrawerListArray(context);
+
     return Scaffold(
       backgroundColor: PrimaryTheme.notWhite.withOpacity(0.5),
       body: Column(
@@ -70,8 +98,8 @@ class _HomeDrawerState extends State<HomeDrawer> {
                         scale: new AlwaysStoppedAnimation(
                             1.0 - (widget.iconAnimationController.value) * 0.2),
                         child: Container(
-                            height: 120,
-                            width: 120,
+                            height: 60,
+                            width: 60,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               boxShadow: <BoxShadow>[
@@ -84,7 +112,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                             child: ClipRRect(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(60.0)),
-                              child: Image.asset("assets/images/userImage.png"),
+                              child: picURL,
                             ),
                             )
                         );
@@ -93,7 +121,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   Padding(
                     padding: const EdgeInsets.only(top: 8, left: 4),
                     child: Text(
-                      "ไม่ระบุตัวตน",
+                      name,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: PrimaryTheme.grey,
@@ -130,7 +158,7 @@ class _HomeDrawerState extends State<HomeDrawer> {
             children: <Widget>[
               ListTile(
                 title: new Text(
-                  "Sign Out",
+                  FlutterI18n.translate(context, 'auth.signout'),
                   style: new TextStyle(
                     fontFamily: PrimaryTheme.fontName,
                     fontWeight: FontWeight.w600,
@@ -143,7 +171,13 @@ class _HomeDrawerState extends State<HomeDrawer> {
                   Icons.power_settings_new,
                   color: Colors.red,
                 ),
-                onTap: () {},
+                onTap: () async {                  
+                  await _auth.signOut();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SignInPage()),
+                  );
+                },
               ),
               SizedBox(
                 height: MediaQuery.of(context).padding.bottom,
@@ -385,6 +419,7 @@ class _DrawerUserControllerState extends State<DrawerUserController>
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       backgroundColor: PrimaryTheme.white,
       body: SingleChildScrollView(

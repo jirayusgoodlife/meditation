@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:meditation/theme/primary.dart';
 import 'package:splashscreen/splashscreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,7 @@ class _LoadingPageState extends State<LoadingPage> {
   selectHome() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final FirebaseUser user = await _auth.currentUser();
-    if(prefs.getBool("see_intro")){
+    if(prefs.getBool("see_intro") != null && prefs.getBool("see_intro") == true ){
       if (user == null) {
         setState(() {
           redirect = SignInPage();
@@ -38,7 +39,7 @@ class _LoadingPageState extends State<LoadingPage> {
  @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_){
+    Future.delayed(Duration.zero,() {
       selectHome();
     });
   }
@@ -49,7 +50,7 @@ class _LoadingPageState extends State<LoadingPage> {
         seconds: 2,
         navigateAfterSeconds: redirect ,
         title: Text(
-          'เจริญสติ',
+          FlutterI18n.translate(context, 'title'),
           style: PrimaryTheme.headline,
         ),
         image: Image.asset('assets/images/logo_app.png'),

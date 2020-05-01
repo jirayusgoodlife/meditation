@@ -9,7 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
+  # language
+  flutter_i18n: ^0.13.2
+
   # bloc
   bloc: ^4.0.0
   flutter_bloc: ^4.0.0
@@ -20,7 +23,7 @@ dependencies:
   firebase_auth: ^0.14.0+5
   cloud_firestore: ^0.12.10+2
 
-  # ios
+  # ios icon
   cupertino_icons: ^0.1.2
 
   # font
@@ -42,6 +45,12 @@ dependencies:
   # splash screen
   splashscreen: ^1.2.0
 
+  # share
+  share: ^0.6.4
+
+  # url
+  url_launcher: 5.2.5
+
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +64,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/languages/
 
   fonts:
     - family: Prompt

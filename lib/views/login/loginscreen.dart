@@ -200,6 +200,7 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection> {
     assert(await user.getIdToken() != null);
 
     final FirebaseUser currentUser = await _auth.currentUser();
+    print(currentUser);
     assert(user.uid == currentUser.uid);
     setState(() {
       if (user != null) {
