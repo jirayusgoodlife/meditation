@@ -1,20 +1,27 @@
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:meditation/theme/primary.dart';
 import 'package:flutter/material.dart';
 
 class TitleView extends StatelessWidget {
   final String titleTxt;
   final String subTxt;
+  final IconData icon;
   final AnimationController animationController;
   final Animation animation;
+  final bool isShowSubIcon;
+  final callback;
 
   const TitleView(
       {Key key,
       this.titleTxt: "",
       this.subTxt: "",
+      this.icon: FontAwesomeIcons.arrowRight,
       this.animationController,
-      this.animation})
+      this.animation,
+      this.isShowSubIcon: true,
+      this.callback})
       : super(key: key);
-      
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -46,7 +53,11 @@ class TitleView extends StatelessWidget {
                     InkWell(
                       highlightColor: Colors.transparent,
                       borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                      onTap: () {},
+                      onTap: () {
+                        if (callback != null) {
+                          callback();
+                        }
+                      },
                       child: Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: Row(
@@ -65,11 +76,10 @@ class TitleView extends StatelessWidget {
                             SizedBox(
                               height: 38,
                               width: 26,
-                              child: Icon(
-                                Icons.arrow_forward,
-                                color: PrimaryTheme.darkText,
-                                size: 18,
-                              ),
+                              child: isShowSubIcon
+                                  ? Icon(icon,
+                                      size: 18, color: PrimaryTheme.darkText)
+                                  : Text(''),
                             ),
                           ],
                         ),

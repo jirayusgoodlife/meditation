@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meditation/models/hexcode.dart';
 
 class PrimaryTheme {
   PrimaryTheme._();
@@ -17,8 +18,10 @@ class PrimaryTheme {
   static const Color chipBackground = Color(0xFFEEF1F3);
   static const Color spacer = Color(0xFFF2F2F2);
   static const Color background = Color(0xFFF2F3F8);
+  static const Color backgroundColor = Color(0xFFFFFFFF);
   static const Color nearlyDarkBlue = Color(0xFF2633C5);
   static const Color nearlyBlue = Color(0xFF00B6F0);
+  static const Color primaryColor = Color(0xFF54D3C2);
 
   static const String fontName = 'Prompt';
 
@@ -32,7 +35,8 @@ class PrimaryTheme {
     caption: caption,
   );
 
-  static const TextStyle display1 = TextStyle( // h4 -> display1
+  static const TextStyle display1 = TextStyle(
+    // h4 -> display1
     fontFamily: fontName,
     fontWeight: FontWeight.bold,
     fontSize: 36,
@@ -41,7 +45,8 @@ class PrimaryTheme {
     color: darkerText,
   );
 
-  static const TextStyle headline = TextStyle( // h5 -> headline
+  static const TextStyle headline = TextStyle(
+    // h5 -> headline
     fontFamily: fontName,
     fontWeight: FontWeight.bold,
     fontSize: 24,
@@ -49,7 +54,8 @@ class PrimaryTheme {
     color: darkerText,
   );
 
-  static const TextStyle title = TextStyle( // h6 -> title
+  static const TextStyle title = TextStyle(
+    // h6 -> title
     fontFamily: fontName,
     fontWeight: FontWeight.bold,
     fontSize: 16,
@@ -57,7 +63,8 @@ class PrimaryTheme {
     color: darkerText,
   );
 
-  static const TextStyle subtitle = TextStyle( // subtitle2 -> subtitle
+  static const TextStyle subtitle = TextStyle(
+    // subtitle2 -> subtitle
     fontFamily: fontName,
     fontWeight: FontWeight.w400,
     fontSize: 14,
@@ -65,7 +72,8 @@ class PrimaryTheme {
     color: darkText,
   );
 
-  static const TextStyle body2 = TextStyle( // body1 -> body2
+  static const TextStyle body2 = TextStyle(
+    // body1 -> body2
     fontFamily: fontName,
     fontWeight: FontWeight.w400,
     fontSize: 14,
@@ -73,7 +81,8 @@ class PrimaryTheme {
     color: darkText,
   );
 
-  static const TextStyle body1 = TextStyle( // body2 -> body1
+  static const TextStyle body1 = TextStyle(
+    // body2 -> body1
     fontFamily: fontName,
     fontWeight: FontWeight.w400,
     fontSize: 16,
@@ -81,7 +90,8 @@ class PrimaryTheme {
     color: darkText,
   );
 
-  static const TextStyle caption = TextStyle( // Caption -> caption
+  static const TextStyle caption = TextStyle(
+    // Caption -> caption
     fontFamily: fontName,
     fontWeight: FontWeight.w400,
     fontSize: 12,
@@ -89,4 +99,16 @@ class PrimaryTheme {
     color: lightText, // was lightText
   );
 
+  static const TextStyle body1White = TextStyle(
+      fontFamily: fontName,
+      fontWeight: FontWeight.w400,
+      fontSize: 16,
+      letterSpacing: -0.05,
+      color: Colors.white);
+
+  static const TextStyle headerSetting = TextStyle(
+      fontFamily: fontName,
+      color: Colors.grey, 
+      fontSize: 15, 
+      fontWeight: FontWeight.normal);
 }

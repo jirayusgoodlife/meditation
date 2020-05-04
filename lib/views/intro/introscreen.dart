@@ -33,7 +33,7 @@ class IntroScreenState extends State<IntroScreen> {
         description:
             "",
         styleDescription: PrimaryTheme.body1,
-        pathImage: "assets/images/logo_app.png",
+        pathImage: "assets/images/Mindfulness_01.jpg",
       ),
     );
     slides.add(
@@ -43,7 +43,7 @@ class IntroScreenState extends State<IntroScreen> {
         description:
             "",
         styleDescription: PrimaryTheme.body1,
-        pathImage: "assets/images/logo_app.png",
+        pathImage: "assets/images/Mindfulness_02.jpg",
       ),
     );
     slides.add(
@@ -65,12 +65,12 @@ class IntroScreenState extends State<IntroScreen> {
     print(prefs.getBool("see_intro"));  
     final FirebaseUser user = await _auth.currentUser();
     if (user == null) {
-     Navigator.push(
+     Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => SignInPage()),
       );
     }else{
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => NavigationHomeScreen()),
       );

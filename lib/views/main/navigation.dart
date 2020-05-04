@@ -5,6 +5,7 @@ import 'package:meditation/views/login/loginscreen.dart';
 import 'package:meditation/views/main/aboutus.dart';
 import 'package:meditation/views/main/homescreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:meditation/views/main/settingscreen.dart';
 import 'package:meditation/views/main/sharescreen.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -23,7 +24,7 @@ class _NavigationHomeScreenState extends State<NavigationHomeScreen> {
     
     final FirebaseUser user = await _auth.currentUser();
       if (user == null) {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => SignInPage()),
         );
@@ -78,14 +79,9 @@ class _NavigationHomeScreenState extends State<NavigationHomeScreen> {
           screenView = ShareScreen();
         });
 
-      }  else if (drawerIndex == DrawerIndex.FEEDBACK) {
-        setState(() {
-          screenView = HomeScreen();
-        });
-
       } else if (drawerIndex == DrawerIndex.SETTING) {
         setState(() {
-          screenView = HomeScreen();
+          screenView = SettingScreen();
         });
 
       } else if (drawerIndex == DrawerIndex.ABOUT) {

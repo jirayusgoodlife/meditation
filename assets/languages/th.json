@@ -4,20 +4,48 @@
         "home": "หน้าแรก",
         "share": "แชร์",
         "setting": "ตั้งค่า",
-        "about": "เกี่ยวกับแอป"        
+        "about": "เกี่ยวกับแอป"
     },
     "auth": {
         "signin": "ลงชื่อเข้าใช้",
         "signout": "ออกจากระบบ",
         "anonymous": "ไม่ระบุตัวตน",
         "signInWithAnonymous": "ลงชื่อเข้าใช้แบบไม่ระบุตัวตน",
-        "signInWithGmail": "ลงชื่อเข้าใช้ด้วย gmail"
+        "signInWithGmail": "ลงชื่อเข้าใช้ด้วย gmail",
+        "inProcess": "กำลังดำเนินการ"
     },
-    "share":{
+    "share": {
         "header": "ใช้ดีบอกต่อ",
         "detail": "แนะนำเพื่อนของคุณมาใช้แอปพลิเคชันนี้สิ",
         "button": "แชร์",
         "onshare": "มาใช้แอปพลิเคชัน \"เจริญสติ\" กันเถอะ",
         "onshare_subject": ":)"
-    }
+    },
+    "main": {
+        "homepage": {
+            "title_01": "สถิติการฝึก",
+            "title_02": "รูปแบบการฝึก",
+            "more": "เพิ่มเติม"
+        },
+        "dashboard": {
+            "today": "วันนี้",
+            "weekly": "สัปดาห์นี้",
+            "monthly": "เดือนนี้",
+            "lastMonth": "เดือนที่แล้ว",
+            "timeLeft": "เหลืออีก {time} นาที",
+            "targetToday": "เป้าหมายวันนี้",
+            "minute": "นาที",
+            "minuteWithTime": "{time} นาที",
+            "success": "สำเร็จ"
+        },
+        "setting": {
+            "save": "บันทึก",
+            "aboutUser": "ส่วนเกี่ยวข้องกับผู้ใช้",
+            "aboutApp": "ส่วนเกี่ยวข้องกับแอปพลิเคชัน",
+            "autoExit": "ปิดอัตโนมัติหลังฝึกเสร็จ",
+            "vibrationStatus": "โหมดสั่น หายใจเข้า/ออก"
+        }
+    },
+    "search": "ค้นหา...",
+    "saving": "กำลังบันทึก"
 }

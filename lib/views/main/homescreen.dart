@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:meditation/theme/primary.dart';
-
-import 'package:meditation/widgets/bodyMeasurement.dart';
-import 'package:meditation/widgets/glassView.dart';
-import 'package:meditation/widgets/mediterranesnDietView.dart';
+import 'package:meditation/views/album/albumscreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meditation/widgets/listSimpleCategoryView.dart';
+import 'package:meditation/widgets/dashboardView.dart';
 import 'package:meditation/widgets/titleView.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key key}) : super(key: key);
@@ -12,155 +17,147 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin{
-
-  Animation<double> topBarAnimation;
-  
-  List<Widget> listViews = List<Widget>();
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  List<Widget> listViews = new List<Widget>();
   var scrollController = ScrollController();
   double topBarOpacity = 0.0;
 
+  int numberTrainToday;
+  int numberTrainWeekly;
+  int numberTrainMonthly;
+  int numberTrainLastMonth;
+  int userTarget;
+
   AnimationController animationController;
-  
+
   @override
   void initState() {
-    
-    animationController = AnimationController (duration: Duration(milliseconds: 600), vsync:this);
-
-    topBarAnimation = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-        parent: animationController,
-        curve: Interval(0, 0.5, curve: Curves.fastOutSlowIn)));
-
-    addAllListData();
-
-    // set topbar on scroller
-    scrollController.addListener(() {
-      if (scrollController.offset >= 24) {
-        if (topBarOpacity != 1.0) {
-          setState(() {
-            topBarOpacity = 1.0;
-          });
-        }
-      } else if (scrollController.offset <= 24 &&
-          scrollController.offset >= 0) {
-        if (topBarOpacity != scrollController.offset / 24) {
-          setState(() {
-            topBarOpacity = scrollController.offset / 24;
-          });
-        }
-      } else if (scrollController.offset <= 0) {
-        if (topBarOpacity != 0.0) {
-          setState(() {
-            topBarOpacity = 0.0;
-          });
-        }
-      }
+    numberTrainToday = 0;
+    numberTrainWeekly = 0;
+    numberTrainMonthly = 0;
+    numberTrainLastMonth = 0;
+    userTarget = 15;
+    animationController =
+        AnimationController(duration: Duration(milliseconds: 600), vsync: this);
+    Future.delayed(Duration.zero, () {
+      addAllListData(context);
+      getUserData();
     });
 
     super.initState();
-    
   }
-  
+
+  getUserData() async {
+    final FirebaseUser user = await _auth.currentUser();
+    Firestore.instance
+        .collection('users')
+        .where("uid", isEqualTo: user.uid)
+        .snapshots()
+        .listen((data) {
+      if (data.documents.isEmpty) {
+        Firestore.instance.collection('users').document().setData({
+          'uid': user.uid,
+          'numberTrainToday': '0',
+          'numberTrainWeekly': '0',
+          'numberTrainMonthly': '0',
+          'numberTrainLastMonth': '0',
+          'userTarget': '15',          
+        });
+      } else {
+        data.documents.forEach((doc) {
+          setState(() {
+            numberTrainToday = int.parse(doc['numberTrainToday']);
+            numberTrainWeekly = int.parse(doc['numberTrainWeekly']);
+            numberTrainMonthly = int.parse(doc['numberTrainMonthly']);
+            numberTrainLastMonth = int.parse(doc['numberTrainLastMonth']);
+            userTarget = int.parse(doc['userTarget']);
+            listViews[1] = DashboardView(
+                animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+                    parent: animationController,
+                    curve: Interval((1 / 4) * 1, 1.0,
+                        curve: Curves.fastOutSlowIn))),
+                animationController: animationController,
+                numberTrainLastMonth: numberTrainLastMonth,
+                numberTrainMonthly: numberTrainMonthly,
+                numberTrainToday: numberTrainToday,
+                numberTrainWeekly: numberTrainWeekly,
+                userTarget: userTarget);
+          });
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: PrimaryTheme.nearlyWhite,
-      child: SafeArea(
-        top: false,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Stack(
-            children: <Widget>[
-              getMainListViewUI(),
-              getAppBarUI(),
-              SizedBox(
-                height: MediaQuery.of(context).padding.bottom,
-              )
-            ]
-          )
-        )
-      )
-    );
+        color: PrimaryTheme.nearlyWhite,
+        child: SafeArea(
+            top: false,
+            child: Scaffold(
+                backgroundColor: Colors.transparent,
+                body: Stack(children: <Widget>[getMainListViewUI()]))));
   }
 
-  void addAllListData() {
-    var count = 7;
-
+  void addAllListData(BuildContext context) {
+    var count = 4;
     listViews.add(
       TitleView(
-        titleTxt: 'Mediterranean diet',
-        subTxt: 'Details',
+        titleTxt: FlutterI18n.translate(context, 'main.homepage.title_01'),
+        subTxt: '',
+        icon: FontAwesomeIcons.syncAlt,
         animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: animationController,
             curve:
                 Interval((1 / count) * 0, 1.0, curve: Curves.fastOutSlowIn))),
         animationController: animationController,
+        isShowSubIcon: true,
+        callback: () {
+          getUserData();
+        },
       ),
     );
 
     listViews.add(
-      MediterranesnDietView(
-        animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: animationController,
-            curve:
-                Interval((1 / count) * 1, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: animationController,
-      ),
+      DashboardView(
+          animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+              parent: animationController,
+              curve:
+                  Interval((1 / count) * 1, 1.0, curve: Curves.fastOutSlowIn))),
+          animationController: animationController,
+          numberTrainLastMonth: numberTrainLastMonth,
+          numberTrainMonthly: numberTrainMonthly,
+          numberTrainToday: numberTrainToday,
+          numberTrainWeekly: numberTrainWeekly,
+          userTarget: userTarget),
     );
-
     listViews.add(
       TitleView(
-        titleTxt: 'Meals today',
-        subTxt: 'Customize',
+        titleTxt: FlutterI18n.translate(context, 'main.homepage.title_02'),
+        subTxt: FlutterI18n.translate(context, 'main.homepage.more'),
         animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: animationController,
             curve:
                 Interval((1 / count) * 2, 1.0, curve: Curves.fastOutSlowIn))),
         animationController: animationController,
+        callback: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AlbumScreenView()),
+          );
+        },
       ),
     );
 
     listViews.add(
-      TitleView(
-        titleTxt: 'Body measurement',
-        subTxt: 'Today',
-        animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: animationController,
-            curve:
-                Interval((1 / count) * 4, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: animationController,
+      ListSimpleCategoryView(
+        mainScreenAnimation: Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(
+                parent: animationController,
+                curve: Interval((1 / count) * 3, 1.0,
+                    curve: Curves.fastOutSlowIn))),
+        mainScreenAnimationController: animationController,
       ),
-    );
-
-    listViews.add(
-      BodyMeasurementView(
-        animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: animationController,
-            curve:
-                Interval((1 / count) * 5, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: animationController,
-      ),
-    );
-
-    listViews.add(
-      TitleView(
-        titleTxt: 'Water',
-        subTxt: 'Aqua SmartBottle',
-        animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-            parent: animationController,
-            curve:
-                Interval((1 / count) * 6, 1.0, curve: Curves.fastOutSlowIn))),
-        animationController: animationController,
-      ),
-    );
-
-    listViews.add(
-      GlassView(
-          animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-              parent: animationController,
-              curve:
-                  Interval((1 / count) * 8, 1.0, curve: Curves.fastOutSlowIn))),
-          animationController: animationController),
     );
   }
 
@@ -168,6 +165,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin{
     await Future.delayed(const Duration(milliseconds: 50));
     return true;
   }
+
   Widget getMainListViewUI() {
     return FutureBuilder(
       future: getData(),
@@ -194,135 +192,4 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin{
       },
     );
   }
-
-  Widget getAppBarUI() {
-    return Column(
-      children: <Widget>[
-        AnimatedBuilder(
-          animation: animationController,
-          builder: (BuildContext context, Widget child) {
-            return FadeTransition(
-              opacity: topBarAnimation,
-              child: new Transform(
-                transform: new Matrix4.translationValues(
-                    0.0, 30 * (1.0 - topBarAnimation.value), 0.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: PrimaryTheme.white.withOpacity(topBarOpacity),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(32.0),
-                    ),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                          color: PrimaryTheme.grey
-                              .withOpacity(0.4 * topBarOpacity),
-                          offset: Offset(1.1, 1.1),
-                          blurRadius: 10.0),
-                    ],
-                  ),
-                  child: Column(
-                    children: <Widget>[
-                      SizedBox(
-                        height: MediaQuery.of(context).padding.top,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 16,
-                            right: 16,
-                            top: 16 - 8.0 * topBarOpacity,
-                            bottom: 12 - 8.0 * topBarOpacity),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  "My Diary",
-                                  textAlign: TextAlign.left,
-                                  style: TextStyle(
-                                    fontFamily: PrimaryTheme.fontName,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 22 + 6 - 6 * topBarOpacity,
-                                    letterSpacing: 1.2,
-                                    color: PrimaryTheme.darkerText,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 38,
-                              width: 38,
-                              child: InkWell(
-                                highlightColor: Colors.transparent,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(32.0)),
-                                onTap: () {},
-                                child: Center(
-                                  child: Icon(
-                                    Icons.keyboard_arrow_left,
-                                    color: PrimaryTheme.grey,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: 8,
-                                right: 8,
-                              ),
-                              child: Row(
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: Icon(
-                                      Icons.calendar_today,
-                                      color: PrimaryTheme.grey,
-                                      size: 18,
-                                    ),
-                                  ),
-                                  Text(
-                                    "15 May",
-                                    textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                      fontFamily: PrimaryTheme.fontName,
-                                      fontWeight: FontWeight.normal,
-                                      fontSize: 18,
-                                      letterSpacing: -0.2,
-                                      color: PrimaryTheme.darkerText,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 38,
-                              width: 38,
-                              child: InkWell(
-                                highlightColor: Colors.transparent,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(32.0)),
-                                onTap: () {},
-                                child: Center(
-                                  child: Icon(
-                                    Icons.keyboard_arrow_right,
-                                    color: PrimaryTheme.grey,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        )
-      ],
-    );
-  }
-  
 }

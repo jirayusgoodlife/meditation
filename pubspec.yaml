@@ -13,10 +13,6 @@ dependencies:
   # language
   flutter_i18n: ^0.13.2
 
-  # bloc
-  bloc: ^4.0.0
-  flutter_bloc: ^4.0.0
-
   # firebase
   firebase_core: ^0.4.2
   firebase_analytics: ^5.0.2
@@ -31,13 +27,14 @@ dependencies:
 
   # storage management
   shared_preferences: ^0.5.3+4
-  path_provider: ^1.1.0
+  path_provider: ^1.6.5
 
   # google auth
   google_sign_in: ^4.0.14
 
   # player sound
-  audio_manager: ^0.5.3+2
+  audio_service: ^0.7.2
+  sys_volume: ^0.1.0
   
   # welcome intro slider
   intro_slider: ^2.2.9
@@ -48,21 +45,27 @@ dependencies:
   # share
   share: ^0.6.4
 
-  # url
-  url_launcher: 5.2.5
+  # popup loading
+  progress_dialog: ^1.2.2
 
+  # animation 2d
+  flare_flutter: ^1.5.4
+
+  # date
+  intl: ^0.16.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   # line auth
-  flutter_line_login: 
+  #flutter_line_login: 
     #path: ./vender/flutter_line_login/
     
 flutter:
   uses-material-design: true
 
   assets:
+    - assets/animation/
     - assets/images/
     - assets/languages/
 
