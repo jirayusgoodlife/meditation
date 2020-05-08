@@ -88,6 +88,7 @@ class _ListSimpleCategoryViewState extends State<ListSimpleCategoryView>
                               artist: document['artist'],
                               album: document['album'],
                               time: document['time'],
+                              detail: document['detail'],
                               music: document['music']),
                           animation: animation,
                           animationController: animationController,

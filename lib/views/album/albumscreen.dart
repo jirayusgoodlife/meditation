@@ -53,6 +53,7 @@ class _AlbumScreenViewState extends State<AlbumScreenView>
             artist: document['artist'],
             album: document['album'],
             time: document['time'],
+            detail: document['detail'],
             music: document['music']));
       });
     }).whenComplete(() {
@@ -259,7 +260,7 @@ class _AlbumScreenViewState extends State<AlbumScreenView>
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Icon(
-                    Icons.arrow_back,
+                    Icons.arrow_back_ios,
                     size: 24,
                   ),
                 ),

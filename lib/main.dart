@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         textTheme: PrimaryTheme.textTheme,
         platform: TargetPlatform.iOS,
       ),
-      home: LoadingPage(),
+      home: LoadingPage(),// AudioServiceWidget(child: LoadingPage()),
       localizationsDelegates: [
         flutterI18nDelegate
       ],

@@ -62,7 +62,7 @@ class IntroScreenState extends State<IntroScreen> {
     // Back to the first tab
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("see_intro", true);
-    print(prefs.getBool("see_intro"));  
+    // print(prefs.getBool("see_intro"));  
     final FirebaseUser user = await _auth.currentUser();
     if (user == null) {
      Navigator.pushReplacement(

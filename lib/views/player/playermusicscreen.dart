@@ -1,382 +1,370 @@
-import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
-
 import 'package:meditation/models/list_data.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:meditation/theme/primary.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:meditation/models/hexcode.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:meditation/views/player/player.dart';
+import 'package:meditation/views/player/review.dart';
 
 class PlayerMusicScreen extends StatefulWidget {
-  PlayerMusicScreen({Key key,this.musicListData}) : super(key: key);
-
+  PlayerMusicScreen({Key key, this.musicListData}) : super(key: key);
   final MusicListData musicListData;
+
+  @override
   _PlayerMusicScreenState createState() => _PlayerMusicScreenState();
 }
 
-class _PlayerMusicScreenState extends State<PlayerMusicScreen> {
+class _PlayerMusicScreenState extends State<PlayerMusicScreen>
+    with TickerProviderStateMixin {
+  final infoHeight = 364.0;
+  AnimationController animationController;
+  Animation<double> animation;
+  var opacity1 = 0.0;
+  var opacity2 = 0.0;
+  var opacity3 = 0.0;
+
+  double point = 0.0;
+  double basePoint = 0.0;
+  int countReview = 0;
   @override
   void initState() {
+    animationController = AnimationController(
+        duration: Duration(milliseconds: 1000), vsync: this);
+    animation = Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+        parent: animationController,
+        curve: Interval(0, 1.0, curve: Curves.fastOutSlowIn)));
+    setData();
+    calculatorPoint();
     super.initState();
+  }
 
+  void calculatorPoint() async {
+    Firestore.instance
+        .collection('logReview')
+        .where("mid", isEqualTo: widget.musicListData.mid)
+        .snapshots()
+        .listen((data) {
+      data.documents.forEach((doc) {
+        // print(double.parse(doc['point'].toString()));
+        setState(() {
+          basePoint += double.parse(doc['point'].toString());
+          countReview += 1;
+          point = basePoint / countReview;
+        });
+      });
+    });
+  }
+
+  void setData() async {
+    animationController.forward();
+    await Future.delayed(const Duration(milliseconds: 200));
+    setState(() {
+      opacity1 = 1.0;
+    });
+    await Future.delayed(const Duration(milliseconds: 200));
+    setState(() {
+      opacity2 = 1.0;
+    });
+    await Future.delayed(const Duration(milliseconds: 200));
+    setState(() {
+      opacity3 = 1.0;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-
-    return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
+    final tempHight = (MediaQuery.of(context).size.height -
+        (MediaQuery.of(context).size.width / 1.2) +
+        24.0);
+    return Container(
+      color: PrimaryTheme.nearlyWhite,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: <Widget>[
+            Column(
               children: <Widget>[
-                Image.network(
-                  'https://www.debuda.net/wp-content/uploads/2017/11/como-decorar-una-habitacion-para-meditar.jpg',
-                  fit: BoxFit.cover,
+                AspectRatio(
+                  aspectRatio: 1.2,
+                  child: Image.network(widget.musicListData.imagePath),
                 ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color(0xFF422479).withOpacity(0.95),
-                        Color(0xFF1C0746).withOpacity(0.75),
-                      ],
-                      begin: FractionalOffset.topCenter,
-                      end: FractionalOffset.bottomCenter,
-                    ),
-                  ),
+              ],
+            ),
+            Positioned(
+              top: (MediaQuery.of(context).size.width / 1.2) - 24.0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: PrimaryTheme.nearlyWhite,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(32.0),
+                      topRight: Radius.circular(32.0)),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                        color: PrimaryTheme.grey.withOpacity(0.2),
+                        offset: Offset(1.1, 1.1),
+                        blurRadius: 10.0),
+                  ],
                 ),
-                Positioned(
-                  top: 40,
-                  width: size.width,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Container(
-                          width: 65,
-                          alignment: Alignment.centerLeft,
-                          child: Icon(
-                            Icons.menu,
-                            color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8, right: 8),
+                  child: SingleChildScrollView(
+                    child: Container(
+                      constraints: BoxConstraints(
+                          minHeight: infoHeight,
+                          maxHeight:
+                              tempHight > infoHeight ? tempHight : infoHeight),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                top: 32.0, left: 18, right: 16),
+                            child: Text(
+                              widget.musicListData.title,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 22,
+                                letterSpacing: 0.27,
+                                color: PrimaryTheme.darkerText,
+                              ),
+                            ),
                           ),
-                        ),
-                        Text(
-                          'StayFit',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 25,
-                          ),
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Stack(
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16, right: 16, bottom: 8, top: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                Container(
-                                  width: 50,
-                                  child: Icon(
-                                    Icons.new_releases,
-                                    size: 30,
-                                    color: Colors.white,
+                                Text(
+                                  widget.musicListData.artist,
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w200,
+                                    fontSize: 20,
+                                    letterSpacing: 0.27,
+                                    color: PrimaryTheme.darkerText
+                                        .withOpacity(0.8),
                                   ),
                                 ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: Container(
-                                    height: 20,
-                                    width: 20,
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      '7',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
+                                Container(
+                                  child: Row(
+                                    children: <Widget>[
+                                      Text(
+                                        point.toString(),
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w200,
+                                          fontSize: 16,
+                                          letterSpacing: 0.27,
+                                          color: PrimaryTheme.grey,
+                                        ),
                                       ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue,
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
+                                      Icon(
+                                        Icons.star,
+                                        color: HexColor(
+                                            widget.musicListData.startColor),
+                                        size: 16,
+                                      ),
+                                    ],
                                   ),
                                 )
                               ],
                             ),
-                            SizedBox(width: 10),
-                            Icon(
-                              Icons.edit,
-                              color: Colors.white,
+                          ),
+                          Expanded(
+                            child: AnimatedOpacity(
+                              duration: Duration(milliseconds: 500),
+                              opacity: opacity2,
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16, right: 16, top: 8, bottom: 8),
+                                child: Text(
+                                  widget.musicListData.detail,
+                                  textAlign: TextAlign.justify,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w200,
+                                    fontSize: 16,
+                                    letterSpacing: 0.27,
+                                    color: PrimaryTheme.grey,
+                                  ),
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 10,
-                  width: size.width,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: <Widget>[
-                        Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: <Widget>[
-                              Icon(
-                                Icons.favorite,
-                                color: Colors.white,
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                'HEART RATE',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            ],
                           ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: <Widget>[
-                              Text(
-                                '84',
-                                style: TextStyle(
-                                  fontSize: 70,
-                                  letterSpacing: 0.2,
-                                  color: Color(0xFFF83B6D),
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          AnimatedOpacity(
+                            duration: Duration(milliseconds: 500),
+                            opacity: opacity3,
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 16, bottom: 16, right: 16),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Expanded(
+                                      child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                              AudioServiceWidget(child: PlayerScreen(musicListData: widget.musicListData))),
+                                      );
+                                    },
+                                    child: Container(
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: HexColor(
+                                            widget.musicListData.startColor),
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(16.0),
+                                        ),
+                                        boxShadow: <BoxShadow>[
+                                          BoxShadow(
+                                              color: HexColor(widget
+                                                      .musicListData.startColor)
+                                                  .withOpacity(0.5),
+                                              offset: Offset(1.1, 1.1),
+                                              blurRadius: 10.0),
+                                        ],
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          FlutterI18n.translate(
+                                              context, 'player.main.start'),
+                                          textAlign: TextAlign.left,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 18,
+                                            letterSpacing: 0.0,
+                                            color: PrimaryTheme.nearlyWhite,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ))
+                                ],
                               ),
-                              SizedBox(width: 10),
-                              Text(
-                                'BPM',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            ],
+                            ),
                           ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  width: size.width,
-                  height: size.height - size.height * .3,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: <Widget>[
-                      new FlareActor(
-                        "assets/animation/haayai.flr",
-                        alignment: Alignment.center,
-                        fit: BoxFit.contain,
-                        animation: "breathing",
+                          SizedBox(
+                            height: MediaQuery.of(context).padding.bottom,
+                          )
+                        ],
                       ),
-                      Container(
-                        width: size.width,
-                        height: size.height - size.height * .28,
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.favorite,
-                          size: 100,
-                          color: Colors.white,
-                        ),
-                      )
-                    ],
-                  ),
-                )
-              ],
-            ),
-          ),
-          Container(
-            width: size.width,
-            height: size.height * .28,
-            child: Row(
-              children: <Widget>[
-                _buildDashboardItem(
-                  Color(0xFF23BFFF),
-                  Icons.local_drink,
-                  70,
-                  '0.58',
-                  'LTRS',
-                  'DRINK',
-                ),
-                _buildDashboardItem(
-                  Color(0xFF9CDD5D),
-                  Icons.fastfood,
-                  50,
-                  '458',
-                  'GRMS.',
-                  'FOOD',
-                  true,
-                ),
-                _buildDashboardItem(
-                  Color(0xFFEF453C),
-                  Icons.hotel,
-                  30,
-                  '7.30',
-                  'HRS',
-                  'SLEEP',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDashboardItem(Color color, IconData icon,
-      double completedPercentage, String value, String unit, String name,
-      [bool useLight = false]) {
-    List<Color> colors = [
-      Color(0xFF311b5b),
-      Color(0xFF221441),
-    ];
-
-    if (useLight) {
-      colors = [
-        Color(0xFF311b5b),
-        Color(0xFF321c5c),
-      ];
-    }
-
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: colors,
-            begin: FractionalOffset.topLeft,
-            end: FractionalOffset.bottomRight,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: CustomPaint(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          value,
-                          style: TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 23,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          unit,
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
                     ),
-                  ),
-                  foregroundPainter: ProgressPainter(
-                    percentageCompletedCircleColor: color,
-                    completedPercentage: completedPercentage,
-                    circleWidth: 10.0,
                   ),
                 ),
               ),
             ),
-            Container(
-              height: 60,
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Icon(
-                    icon,
-                    color: Colors.white,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+            Positioned(
+              top: (MediaQuery.of(context).size.width / 1.2) - 24.0 - 35,
+              right: 35,
+              child: new ScaleTransition(
+                alignment: Alignment.center,
+                scale: new CurvedAnimation(
+                    parent: animationController, curve: Curves.fastOutSlowIn),
+                child: Card(
+                  color: HexColor(widget.musicListData.startColor),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50.0)),
+                  elevation: 10.0,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    child: Center(
+                      child: Icon(
+                        Icons.music_note,
+                        color: PrimaryTheme.nearlyWhite,
+                        size: 30,
+                      ),
                     ),
-                  )
-                ],
+                  ),
+                ),
               ),
             ),
+            Padding(
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+              child: SizedBox(
+                width: AppBar().preferredSize.height,
+                height: AppBar().preferredSize.height,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: new BorderRadius.circular(
+                        AppBar().preferredSize.height),
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      color: PrimaryTheme.nearlyBlack,
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ),
+            )
           ],
         ),
       ),
     );
   }
-}
 
-
-
-class ProgressPainter extends CustomPainter {
-  final Color percentageCompletedCircleColor;
-  final double completedPercentage;
-  final double circleWidth;
-
-  ProgressPainter({
-    this.percentageCompletedCircleColor,
-    this.completedPercentage,
-    this.circleWidth,
-  });
-
-  getPaint(Color color) {
-    return Paint()
-      ..color = color
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = circleWidth;
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint defaultCirclePaint =
-        getPaint(percentageCompletedCircleColor.withOpacity(0.2));
-    Paint progressCirclePaint = getPaint(percentageCompletedCircleColor);
-
-    Offset center = Offset(size.width / 2, size.height / 2);
-    double radius = min(size.width / 2, size.height / 2);
-    canvas.drawCircle(center, radius, defaultCirclePaint);
-
-    double arcAngle = 2 * pi * (completedPercentage / 100);
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), -pi / 2,
-        arcAngle, false, progressCirclePaint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter painter) {
-    return true;
+  Widget getTimeBoxUI(String text1, String txt2) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: PrimaryTheme.nearlyWhite,
+          borderRadius: BorderRadius.all(Radius.circular(16.0)),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+                color: PrimaryTheme.grey.withOpacity(0.2),
+                offset: Offset(1.1, 1.1),
+                blurRadius: 8.0),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(
+              left: 18.0, right: 18.0, top: 12.0, bottom: 12.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                text1,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  letterSpacing: 0.27,
+                  color: PrimaryTheme.nearlyBlue,
+                ),
+              ),
+              Text(
+                txt2,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w200,
+                  fontSize: 14,
+                  letterSpacing: 0.27,
+                  color: PrimaryTheme.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

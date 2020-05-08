@@ -8,6 +8,7 @@ class MusicListData {
     this.music = '', 
     this.album = '', 
     this.artist = '',
+    this.detail = '',
     this.time = ''
   });
 
@@ -19,5 +20,6 @@ class MusicListData {
   String music;
   String album;
   String artist;
+  String detail;
   String time;
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:meditation/models/hexcode.dart';
 
 class PrimaryTheme {
   PrimaryTheme._();
@@ -94,7 +93,7 @@ class PrimaryTheme {
     // Caption -> caption
     fontFamily: fontName,
     fontWeight: FontWeight.w400,
-    fontSize: 12,
+    fontSize: 16,
     letterSpacing: 0.2,
     color: lightText, // was lightText
   );

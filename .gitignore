@@ -1,3 +1,6 @@
+# key
+/android/key.properties
+key.jks
 # Miscellaneous
 *.class
 *.log
