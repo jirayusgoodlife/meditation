@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meditation/theme/primary.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:meditation/views/main/navigation.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';

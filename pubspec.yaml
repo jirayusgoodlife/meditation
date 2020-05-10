@@ -36,7 +36,6 @@ dependencies:
   audio_service: ^0.8.0
   sys_volume: ^0.1.0
   just_audio: ^0.1.8
-  rxdart: ^0.24.0
 
   # date
   intl: ^0.16.0

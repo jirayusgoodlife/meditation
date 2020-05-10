@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meditation/models/hexcode.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:meditation/views/player/player.dart';
-import 'package:meditation/views/player/review.dart';
 
 class PlayerMusicScreen extends StatefulWidget {
   PlayerMusicScreen({Key key, this.musicListData}) : super(key: key);
@@ -47,7 +46,6 @@ class _PlayerMusicScreenState extends State<PlayerMusicScreen>
         .snapshots()
         .listen((data) {
       data.documents.forEach((doc) {
-        // print(double.parse(doc['point'].toString()));
         setState(() {
           basePoint += double.parse(doc['point'].toString());
           countReview += 1;

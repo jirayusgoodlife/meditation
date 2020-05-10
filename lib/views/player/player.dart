@@ -1,19 +1,22 @@
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:meditation/models/hexcode.dart';
 import 'package:meditation/models/list_data.dart';
-import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:meditation/views/player/review.dart';
 import 'package:sys_volume/flutter_volume.dart';
 import 'package:meditation/theme/primary.dart';
 import 'package:meditation/widgets/sliderButton.dart';
 import 'package:vibration/vibration.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:flare_flutter/flare_actor.dart';
+import 'package:meditation/models/audio_player_task.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-AudioPlayerTask audioPlayerTask = new AudioPlayerTask();
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class PlayerScreen extends StatefulWidget {
   PlayerScreen({Key key, this.musicListData}) : super(key: key);
@@ -30,128 +33,125 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   bool isCountState = true;
   bool isStart = false;
+  bool isPlayer = false;
+
+  Timer _timer;
+  int sec = 0;
+  int min = 0;
+  int hour = 0;
+  String userDocId = "";
+  int numberTrainToday = 0;
+  int numberTrainWeekly = 0;
+  int numberTrainMonthly = 0;
 
   @override
   void initState() {
     super.initState();
+
     setState(() {
       isCountState = true;
       isStart = false;
+      isPlayer = false;
     });
+
     FlutterVolume.get().then((v) {
       setState(() {
         volume = v;
       });
     });
+
+    AudioService.start(
+      backgroundTaskEntrypoint: _backgroundTaskEntrypoint,
+      androidNotificationChannelName: 'เจริญสติ',
+      notificationColor: 0xFF2196f3,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      enableQueue: true,
+    );
+
+    if (AudioService.playbackState != null &&
+        AudioService.playbackState.basicState == BasicPlaybackState.playing) {
+      animationCountToBreath();
+      isPlayer = true;
+    }
+
+    getUserDocId();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Container(
-        color: PrimaryTheme.nearlyWhite,
-        child: Scaffold(
-            backgroundColor: Colors.transparent,
-            body: VolumeWatcher(
-              watcher: (vol) {
-                if (vol.vol > 0.65) {
-                  FlutterVolume.set(0.65);
-                }
-                setState(() {
-                  volume = vol.vol;
-                });
-              },
-              child: Column(children: <Widget>[
-                Expanded(
-                    child: Stack(fit: StackFit.expand, children: <Widget>[
-                  Image.network(
-                    'https://www.debuda.net/wp-content/uploads/2017/11/como-decorar-una-habitacion-para-meditar.jpg',
-                    fit: BoxFit.cover,
-                  ),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          HexColor(widget.musicListData.startColor)
-                              .withOpacity(0.92),
-                          HexColor(widget.musicListData.endColor)
-                              .withOpacity(0.92),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomCenter,
+    return WillPopScope(
+        onWillPop: () async => false,
+        child: Container(
+            color: PrimaryTheme.nearlyWhite,
+            child: Scaffold(
+                backgroundColor: Colors.transparent,
+                body: VolumeWatcher(
+                  watcher: (vol) {
+                    setState(() {
+                      volume = vol.vol;
+                    });
+                  },
+                  child: Column(children: <Widget>[
+                    Expanded(
+                        child: Stack(fit: StackFit.expand, children: <Widget>[
+                      Image.network(
+                        'https://www.debuda.net/wp-content/uploads/2017/11/como-decorar-una-habitacion-para-meditar.jpg',
+                        fit: BoxFit.cover,
                       ),
-                    ),
-                  ),
-                  getAnimation(size)
-                ])),
-                Container(
-                    width: size.width,
-                    height: size.height * .28,
-                    child: Stack(fit: StackFit.expand, children: <Widget>[
-                      Container(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                HexColor(widget.musicListData.endColor)
-                                    .withOpacity(0.92),
-                                HexColor(widget.musicListData.endColor)
-                                    .withOpacity(0.92)
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomCenter,
-                            ),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              HexColor(widget.musicListData.startColor)
+                                  .withOpacity(0.92),
+                              HexColor(widget.musicListData.endColor)
+                                  .withOpacity(0.92),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomCenter,
                           ),
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[getMusicPlayer()]))
-                    ]))
-              ]),
-            )));
-  }
-
-  Widget getMusicPlayer() {
-    return Center(
-        child: StreamBuilder<ScreenState>(
-      stream: _screenStateStream,
-      builder: (context, snapshot) {
-        final screenState = snapshot.data;
-        final state = screenState?.playbackState;
-        final basicState = state?.basicState ?? BasicPlaybackState.none;
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (basicState == BasicPlaybackState.none) ...[
-              audioPlayerButton(),
-            ] else
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (basicState == BasicPlaybackState.playing)
-                    pauseButton()
-                  else if (basicState == BasicPlaybackState.paused)
-                    playButton()
-                  else if (basicState == BasicPlaybackState.buffering ||
-                      basicState == BasicPlaybackState.skippingToNext ||
-                      basicState == BasicPlaybackState.skippingToPrevious)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 64.0,
-                        height: 64.0,
-                        child: CircularProgressIndicator(),
+                        ),
                       ),
-                    ),
-                  stopButton(),
-                ],
-              ),
-            stopPlayer(),
-          ],
-        );
-      },
-    ));
+                      getHeader(size),
+                      getTimer(size),
+                      getAnimation(size)
+                    ])),
+                    Container(
+                        width: size.width,
+                        height: size.height * .28,
+                        child: Stack(fit: StackFit.expand, children: <Widget>[
+                          Container(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    HexColor(widget.musicListData.endColor)
+                                        .withOpacity(0.92),
+                                    HexColor(widget.musicListData.endColor)
+                                        .withOpacity(0.92)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
+                              child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: <Widget>[
+                                    Center(child: stopPlayer())
+                                  ]))
+                        ]))
+                  ]),
+                ))));
   }
 
+  // UI
   Widget getAnimation(Size size) {
     return Positioned(
       top: 0,
@@ -176,10 +176,92 @@ class _PlayerScreenState extends State<PlayerScreen> {
                       fit: BoxFit.contain,
                       animation: _breathingAnimation,
                     )
-              : Container()
+              : Container(),
+          GestureDetector(
+              onTap: () {
+                setState(() {
+                  isPlayer = true;
+                });
+                if (isPlayer) {
+                  play();
+                  startTimer();
+                } else {
+                  //pause();
+                }
+              },
+              child: Container(
+                width: size.width,
+                //height: size.height - size.height * .28,
+                alignment: Alignment.center,
+                child: StreamBuilder<PlaybackState>(
+                  stream: AudioService.playbackStateStream,
+                  builder: (context, snapshot) {
+                    final state =
+                        snapshot.data?.basicState ?? BasicPlaybackState.stopped;
+                    if (state == BasicPlaybackState.playing)
+                      return SizedBox(
+                        width: 150,
+                        height: 150,
+                      );
+                    return Icon(Icons.play_arrow,
+                        size: 50, color: Colors.white);
+                  },
+                ),
+              ))
         ],
       ),
     );
+  }
+
+  Widget getTimer(Size size) {
+    final String minutesStr = (min).toString().padLeft(2, '0');
+    final String secondsStr = (sec).toString().padLeft(2, '0');
+    return Positioned(
+        bottom: 10,
+        width: size.width,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: <Widget>[
+                    Icon(
+                      Icons.watch_later,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      "$minutesStr:$secondsStr",
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+
+  Widget getHeader(Size size) {
+    return Positioned(
+        top: 40,
+        width: size.width,
+        child: Container(
+            alignment: Alignment.topRight,
+            width: size.width,
+            child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: getIconSpeaker())));
   }
 
   Widget stopPlayer() {
@@ -189,17 +271,24 @@ class _PlayerScreenState extends State<PlayerScreen> {
       buttonSize: 40,
       radius: 5,
       buttonRadius: 100,
-      action: () {
+      action: () async {
         setState(() {
           isCountState = true;
           isStart = false;
         });
         ProgressDialog pr = new ProgressDialog(context);
         pr.style(message: FlutterI18n.translate(context, 'saving'));
+        stop();
         pr.show();
+        await saveTime();
         Future.delayed(Duration(seconds: 2), () {
           pr.hide();
-          Navigator.pop(context);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    ReviewScreen(mid: widget.musicListData.mid)),
+          );
         });
         Vibration.vibrate(duration: 100);
         //Navigator.of(context).pop();
@@ -218,28 +307,49 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
-  /// Encapsulate all the different data we're interested in into a single
-  /// stream so we don't have to nest StreamBuilders.
-  Stream<ScreenState> get _screenStateStream =>
-      Rx.combineLatest3<List<MediaItem>, MediaItem, PlaybackState, ScreenState>(
-          AudioService.queueStream,
-          AudioService.currentMediaItemStream,
-          AudioService.playbackStateStream,
-          (queue, mediaItem, playbackState) =>
-              ScreenState(queue, mediaItem, playbackState));
-
-  RaisedButton audioPlayerButton() => startButton(
-        'AudioPlayer',
-        () {
-          AudioService.start(
-            backgroundTaskEntrypoint: _audioPlayerTaskEntrypoint,
-            androidNotificationChannelName: 'Audio Service Demo',
-            notificationColor: 0xFF2196f3,
-            androidNotificationIcon: 'mipmap/ic_launcher',
-            enableQueue: true,
-          );
-        },
+  Widget getIconSpeaker() {
+    if (volume < 0.1) {
+      return FaIcon(
+        FontAwesomeIcons.volumeOff,
+        size: 20,
+        color: Colors.white,
       );
+    }
+
+    if (volume < 0.6) {
+      return FaIcon(
+        FontAwesomeIcons.volumeDown,
+        size: 20,
+        color: Colors.white,
+      );
+    }
+
+    if (volume > 0.8) {
+      return Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            FaIcon(
+              FontAwesomeIcons.volumeUp,
+              size: 20,
+              color: Colors.white,
+            ),
+            SizedBox(width: 10),
+            FaIcon(
+              FontAwesomeIcons.exclamation,
+              size: 20,
+              color: Colors.red,
+            ),
+          ]);
+    }
+
+    return FaIcon(
+      FontAwesomeIcons.volumeUp,
+      size: 20,
+      color: Colors.white,
+    );
+  }
 
   animationCountToBreath() {
     setState(() {
@@ -252,244 +362,103 @@ class _PlayerScreenState extends State<PlayerScreen> {
     });
   }
 
-  animationStop() {
+  // action
+  play() async {
+    if (AudioService.running) {
+      AudioService.addQueueItem(MediaItem(
+        id: widget.musicListData.music,
+        album: widget.musicListData.album,
+        title: widget.musicListData.title,
+        artist: widget.musicListData.artist,
+        artUri: widget.musicListData.imagePath,
+      ));
+      AudioService.playFromMediaId(widget.musicListData.music);
+    } else {
+      await AudioService.start(
+        backgroundTaskEntrypoint: _backgroundTaskEntrypoint,
+        androidNotificationChannelName: 'เจริญสติ',
+        notificationColor: 0xFF2196f3,
+        androidNotificationIcon: 'mipmap/ic_launcher',
+        enableQueue: true,
+      );
+      AudioService.addQueueItem(MediaItem(
+        id: widget.musicListData.music,
+        album: widget.musicListData.album,
+        title: widget.musicListData.title,
+        artist: widget.musicListData.artist,
+        artUri: widget.musicListData.imagePath,
+      ));
+      AudioService.playFromMediaId(widget.musicListData.music);
+    }
+    animationCountToBreath();
+  }
+
+  pause() {
+    AudioService.pause();
     setState(() {
       isStart = false;
       isCountState = true;
     });
   }
 
-  RaisedButton startButton(String label, VoidCallback onPressed) =>
-      RaisedButton(
-        child: Text(label),
-        onPressed: onPressed,
-      );
+  stop() {
+    AudioService.stop();
+  }
 
-  IconButton playButton() => IconButton(
-        icon: Icon(Icons.play_arrow),
-        iconSize: 64.0,
-        onPressed: AudioService.play,
-      );
+  saveTime() async {
+    int timeMeditation = min + (hour * 60);
+    print('$timeMeditation');
+    print('$userDocId');
+    // TODO : insert logTime
+    Firestore.instance.collection('users').document(userDocId).updateData({
+      'numberTrainToday': (numberTrainToday + timeMeditation).toString(),
+      'numberTrainWeekly': (numberTrainWeekly + timeMeditation).toString(),
+      'numberTrainMonthly': (numberTrainMonthly + timeMeditation).toString()
+    });
+    
+  }
 
-  IconButton pauseButton() => IconButton(
-        icon: Icon(Icons.pause),
-        iconSize: 64.0,
-        onPressed: AudioService.pause,
-      );
+  getUserDocId() async {
+    final FirebaseUser user = await _auth.currentUser();
+    Firestore.instance
+        .collection('users')
+        .where("uid", isEqualTo: user.uid)
+        .snapshots()
+        .listen((data) {
+      data.documents.forEach((doc) {
+        setState(() {
+          userDocId = doc.documentID;
+          numberTrainToday = int.parse(doc['numberTrainToday']);
+          numberTrainWeekly = int.parse(doc['numberTrainWeekly']);
+          numberTrainMonthly = int.parse(doc['numberTrainMonthly']);
+        });
+      });
+    });
+  }
 
-  IconButton stopButton() => IconButton(
-        icon: Icon(Icons.stop),
-        iconSize: 64.0,
-        onPressed: AudioService.stop,
-      );
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(oneSec, (Timer timer) {
+      if (sec >= 59) {
+        setState(() {
+          sec = 0;
+          min = min + 1;
+        });
+      }
+      if (min >= 59) {
+        setState(() {
+          min = 0;
+          hour = hour + 1;
+        });
+      }
+      setState(() {
+        sec = sec + 1;
+      });
+    });
+  }
 }
 
-void _audioPlayerTaskEntrypoint() async {
+// top-level static function
+_backgroundTaskEntrypoint() {
   AudioServiceBackground.run(() => AudioPlayerTask());
 }
-
-class ScreenState {
-  final List<MediaItem> queue;
-  final MediaItem mediaItem;
-  final PlaybackState playbackState;
-
-  ScreenState(this.queue, this.mediaItem, this.playbackState);
-}
-
-class AudioPlayerTask extends BackgroundAudioTask {
-  final _queue = <MediaItem>[
-    MediaItem(
-      id: "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3",
-      album: "Science Friday",
-      title: "A Salute To Head-Scratching Science",
-      artist: "Science Friday and WNYC Studios",
-      // duration: 5739820,
-      artUri:
-          "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-    )
-  ];
-  int _queueIndex = -1;
-  AudioPlayer _audioPlayer = new AudioPlayer();
-  Completer _completer = Completer();
-  BasicPlaybackState _skipState;
-  bool _playing;
-
-  bool get hasNext => _queueIndex + 1 < _queue.length;
-
-  bool get hasPrevious => _queueIndex > 0;
-
-  MediaItem get mediaItem => _queue[_queueIndex];
-
-  BasicPlaybackState _eventToBasicState(AudioPlaybackEvent event) {
-    if (event.buffering) {
-      return BasicPlaybackState.buffering;
-    } else {
-      switch (event.state) {
-        case AudioPlaybackState.none:
-          return BasicPlaybackState.none;
-        case AudioPlaybackState.stopped:
-          return BasicPlaybackState.stopped;
-        case AudioPlaybackState.paused:
-          return BasicPlaybackState.paused;
-        case AudioPlaybackState.playing:
-          return BasicPlaybackState.playing;
-        case AudioPlaybackState.connecting:
-          return _skipState ?? BasicPlaybackState.connecting;
-        case AudioPlaybackState.completed:
-          return BasicPlaybackState.stopped;
-        default:
-          throw Exception("Illegal state");
-      }
-    }
-  }
-
-  @override
-  Future<void> onStart() async {
-    var playerStateSubscription = _audioPlayer.playbackStateStream
-        .where((state) => state == AudioPlaybackState.completed)
-        .listen((state) {
-      _handlePlaybackCompleted();
-    });
-    var eventSubscription = _audioPlayer.playbackEventStream.listen((event) {
-      final state = _eventToBasicState(event);
-      if (state != BasicPlaybackState.stopped) {
-        _setState(
-          state: state,
-          position: event.position.inMilliseconds,
-        );
-      }
-    });
-
-    AudioServiceBackground.setQueue(_queue);
-    await onSkipToNext();
-    await _completer.future;
-    playerStateSubscription.cancel();
-    eventSubscription.cancel();
-  }
-
-  void _handlePlaybackCompleted() {
-    if (hasNext) {
-      onSkipToNext();
-    } else {
-      onStop();
-    }
-  }
-
-  void playPause() {
-    if (AudioServiceBackground.state.basicState == BasicPlaybackState.playing)
-      onPause();
-    else
-      onPlay();
-  }
-
-  @override
-  Future<void> onSkipToNext() => _skip(1);
-
-  @override
-  Future<void> onSkipToPrevious() => _skip(-1);
-
-  Future<void> _skip(int offset) async {
-    final newPos = _queueIndex + offset;
-    if (!(newPos >= 0 && newPos < _queue.length)) return;
-    if (_playing == null) {
-      // First time, we want to start playing
-      _playing = true;
-    } else if (_playing) {
-      // Stop current item
-      await _audioPlayer.stop();
-    }
-    // Load next item
-    _queueIndex = newPos;
-    AudioServiceBackground.setMediaItem(mediaItem);
-    _skipState = offset > 0
-        ? BasicPlaybackState.skippingToNext
-        : BasicPlaybackState.skippingToPrevious;
-    await _audioPlayer.setUrl(mediaItem.id);
-    _skipState = null;
-    // Resume playback if we were playing
-    if (_playing) {
-      onPlay();
-    } else {
-      _setState(state: BasicPlaybackState.paused);
-    }
-  }
-
-  @override
-  void onPlay() {
-    if (_skipState == null) {
-      _playing = true;
-      _audioPlayer.play();
-    }
-  }
-
-  @override
-  void onPause() {
-    if (_skipState == null) {
-      _playing = false;
-      _audioPlayer.pause();
-    }
-  }
-
-  @override
-  void onSeekTo(int position) {
-    _audioPlayer.seek(Duration(milliseconds: position));
-  }
-
-  @override
-  void onClick(MediaButton button) {
-    playPause();
-  }
-
-  @override
-  void onStop() {
-    _audioPlayer.stop();
-    _setState(state: BasicPlaybackState.stopped);
-    _completer.complete();
-  }
-
-  void _setState({@required BasicPlaybackState state, int position}) {
-    if (position == null) {
-      position = _audioPlayer.playbackEvent.position.inMilliseconds;
-    }
-    AudioServiceBackground.setState(
-      controls: getControls(state),
-      systemActions: [MediaAction.seekTo],
-      basicState: state,
-      position: position,
-    );
-  }
-
-  List<MediaControl> getControls(BasicPlaybackState state) {
-    if (_playing) {
-      return [
-        // skipToPreviousControl,
-        pauseControl,
-        stopControl,
-        // skipToNextControl
-      ];
-    } else {
-      return [
-        // skipToPreviousControl,
-        playControl,
-        stopControl,
-        // skipToNextControl
-      ];
-    }
-  }
-}
-
-MediaControl playControl = MediaControl(
-  androidIcon: 'drawable/ic_action_play_arrow',
-  label: 'Play',
-  action: MediaAction.play,
-);
-MediaControl pauseControl = MediaControl(
-  androidIcon: 'drawable/ic_action_pause',
-  label: 'Pause',
-  action: MediaAction.pause,
-);
-MediaControl stopControl = MediaControl(
-  androidIcon: 'drawable/ic_action_stop',
-  label: 'Stop',
-  action: MediaAction.stop,
-);

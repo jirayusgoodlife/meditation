@@ -9,12 +9,12 @@ import androidx.annotation.NonNull;
 import io.flutter.plugins.GeneratedPluginRegistrant
 
 class MainActivity : FlutterActivity() {
-
+ 
 	override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         GeneratedPluginRegistrant.registerWith(flutterEngine);
 	}
-	
-	/** This is a temporary workaround to avoid a memory leak in the Flutter framework  */
+ 	
+	/** This is a temporary workaround to avoid a memory leak in the Flutter framework 
 	override fun provideFlutterEngine(context: Context): FlutterEngine? {
 		// Instantiate a FlutterEngine.
 		val flutterEngine = FlutterEngine(context.applicationContext)
@@ -25,5 +25,6 @@ class MainActivity : FlutterActivity() {
 		)
 		return flutterEngine
 	}
+	 */
 }
 

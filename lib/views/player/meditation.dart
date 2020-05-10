@@ -1,382 +1,100 @@
-import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
-
 import 'package:meditation/models/list_data.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:meditation/models/audio_player_task.dart';
 
-class PlayerMusicScreen extends StatefulWidget {
-  PlayerMusicScreen({Key key,this.musicListData}) : super(key: key);
+class PlayerScreen extends StatefulWidget {
+  PlayerScreen({Key key, this.musicListData}) : super(key: key);
 
   final MusicListData musicListData;
-  _PlayerMusicScreenState createState() => _PlayerMusicScreenState();
+  _PlayerScreenState createState() => _PlayerScreenState();
 }
 
-class _PlayerMusicScreenState extends State<PlayerMusicScreen> {
+class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
+    AudioService.start(
+      backgroundTaskEntrypoint: _backgroundTaskEntrypoint,
+      androidNotificationChannelName: 'เจริญสติ',
+      notificationColor: 0xFF2196f3,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      enableQueue: true,
+    );
     super.initState();
+  }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    if (AudioService.running) {
+      AudioService.stop();
+    }
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                Image.network(
-                  'https://www.debuda.net/wp-content/uploads/2017/11/como-decorar-una-habitacion-para-meditar.jpg',
-                  fit: BoxFit.cover,
-                ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color(0xFF422479).withOpacity(0.95),
-                        Color(0xFF1C0746).withOpacity(0.75),
-                      ],
-                      begin: FractionalOffset.topCenter,
-                      end: FractionalOffset.bottomCenter,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 40,
-                  width: size.width,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Container(
-                          width: 65,
-                          alignment: Alignment.centerLeft,
-                          child: Icon(
-                            Icons.menu,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          'StayFit',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 25,
-                          ),
-                        ),
-                        Row(
-                          children: <Widget>[
-                            Stack(
-                              children: <Widget>[
-                                Container(
-                                  width: 50,
-                                  child: Icon(
-                                    Icons.new_releases,
-                                    size: 30,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: Container(
-                                    height: 20,
-                                    width: 20,
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      '7',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue,
-                                      borderRadius: BorderRadius.circular(50),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                            SizedBox(width: 10),
-                            Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 10,
-                  width: size.width,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: <Widget>[
-                        Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: <Widget>[
-                              Icon(
-                                Icons.favorite,
-                                color: Colors.white,
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                'HEART RATE',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: <Widget>[
-                              Text(
-                                '84',
-                                style: TextStyle(
-                                  fontSize: 70,
-                                  letterSpacing: 0.2,
-                                  color: Color(0xFFF83B6D),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                'BPM',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  width: size.width,
-                  height: size.height - size.height * .3,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: <Widget>[
-                      new FlareActor(
-                        "assets/animation/haayai.flr",
-                        alignment: Alignment.center,
-                        fit: BoxFit.contain,
-                        animation: "breathing",
-                      ),
-                      Container(
-                        width: size.width,
-                        height: size.height - size.height * .28,
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.favorite,
-                          size: 100,
-                          color: Colors.white,
-                        ),
-                      )
-                    ],
-                  ),
-                )
+      appBar: AppBar(title: Text("Example")),
+      body: Center(
+        child: StreamBuilder<PlaybackState>(
+          stream: AudioService.playbackStateStream,
+          builder: (context, snapshot) {
+            final state =
+                snapshot.data?.basicState ?? BasicPlaybackState.stopped;
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (state == BasicPlaybackState.playing)
+                  RaisedButton(child: Text("Pause"), onPressed: pause)
+                else
+                  RaisedButton(child: Text("Play"), onPressed: play),
+                if (state != BasicPlaybackState.stopped)
+                  RaisedButton(child: Text("Stop"), onPressed: stop),
               ],
-            ),
-          ),
-          Container(
-            width: size.width,
-            height: size.height * .28,
-            child: Row(
-              children: <Widget>[
-                _buildDashboardItem(
-                  Color(0xFF23BFFF),
-                  Icons.local_drink,
-                  70,
-                  '0.58',
-                  'LTRS',
-                  'DRINK',
-                ),
-                _buildDashboardItem(
-                  Color(0xFF9CDD5D),
-                  Icons.fastfood,
-                  50,
-                  '458',
-                  'GRMS.',
-                  'FOOD',
-                  true,
-                ),
-                _buildDashboardItem(
-                  Color(0xFFEF453C),
-                  Icons.hotel,
-                  30,
-                  '7.30',
-                  'HRS',
-                  'SLEEP',
-                ),
-              ],
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildDashboardItem(Color color, IconData icon,
-      double completedPercentage, String value, String unit, String name,
-      [bool useLight = false]) {
-    List<Color> colors = [
-      Color(0xFF311b5b),
-      Color(0xFF221441),
-    ];
-
-    if (useLight) {
-      colors = [
-        Color(0xFF311b5b),
-        Color(0xFF321c5c),
-      ];
+  play() async {
+    if (AudioService.running) {
+      AudioService.addQueueItem(MediaItem(
+        id: widget.musicListData.music,
+        album: widget.musicListData.album,
+        title: widget.musicListData.title,
+        artist: widget.musicListData.artist,
+        artUri:widget.musicListData.imagePath,
+      ));
+      AudioService.playFromMediaId(widget.musicListData.music);
+      AudioService.play();
+    } else {
+      AudioService.start(
+        backgroundTaskEntrypoint: _backgroundTaskEntrypoint,
+        androidNotificationChannelName: 'เจริญสติ',
+        notificationColor: 0xFF2196f3,
+        androidNotificationIcon: 'mipmap/ic_launcher',
+        enableQueue: true,
+      );
+      AudioService.addQueueItem(MediaItem(
+        id: widget.musicListData.music,
+        album: widget.musicListData.album,
+        title: widget.musicListData.title,
+        artist: widget.musicListData.artist,
+        artUri:widget.musicListData.imagePath,
+      ));
+      AudioService.playFromMediaId(widget.musicListData.music);
+      AudioService.play();
     }
-
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: colors,
-            begin: FractionalOffset.topLeft,
-            end: FractionalOffset.bottomRight,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: CustomPaint(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        Text(
-                          value,
-                          style: TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 23,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          unit,
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  foregroundPainter: ProgressPainter(
-                    percentageCompletedCircleColor: color,
-                    completedPercentage: completedPercentage,
-                    circleWidth: 10.0,
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              height: 60,
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Icon(
-                    icon,
-                    color: Colors.white,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
+
+  pause() => AudioService.pause();
+  stop() => AudioService.stop();
 }
 
-
-
-class ProgressPainter extends CustomPainter {
-  final Color percentageCompletedCircleColor;
-  final double completedPercentage;
-  final double circleWidth;
-
-  ProgressPainter({
-    this.percentageCompletedCircleColor,
-    this.completedPercentage,
-    this.circleWidth,
-  });
-
-  getPaint(Color color) {
-    return Paint()
-      ..color = color
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = circleWidth;
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint defaultCirclePaint =
-        getPaint(percentageCompletedCircleColor.withOpacity(0.2));
-    Paint progressCirclePaint = getPaint(percentageCompletedCircleColor);
-
-    Offset center = Offset(size.width / 2, size.height / 2);
-    double radius = min(size.width / 2, size.height / 2);
-    canvas.drawCircle(center, radius, defaultCirclePaint);
-
-    double arcAngle = 2 * pi * (completedPercentage / 100);
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), -pi / 2,
-        arcAngle, false, progressCirclePaint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter painter) {
-    return true;
-  }
+// top-level static function
+_backgroundTaskEntrypoint() {
+  AudioServiceBackground.run(() => AudioPlayerTask());
 }
