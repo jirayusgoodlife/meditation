@@ -53,6 +53,7 @@
                 <textarea class="form-control" id="detail" name="detail" rows="3"></textarea>
               </div>
             <button type="button" id="btn-submit" class="btn btn-primary">Submit</button>
+            <button type="button" id="btn-submit" class="btn" onclick="location.reload();">clear</button>
           </form>
     </div>
     
@@ -112,7 +113,6 @@
                     time: $('#time').val(),
                     detail: $('#detail').val(),
                 })
-                location.reload();
             })
 
             

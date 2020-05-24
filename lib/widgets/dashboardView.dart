@@ -167,7 +167,11 @@ class DashboardView extends StatelessWidget {
 
   double calculatorTarget() {
     if (numberTrainToday == 0) return 0.0;
-    return numberTrainToday / userTarget * 100;
+    var value_return = numberTrainToday / userTarget * 100;
+    if(value_return > 100){
+      value_return = 100;
+    }
+    return value_return;
   }
 
   @override

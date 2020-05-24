@@ -58,10 +58,19 @@ class AudioPlayerTask extends BackgroundAudioTask {
 
   @override
   Future<void> onStart() async {
+    var playerStateSubscription = _audioPlayer.playbackStateStream
+        .where((state) => state == AudioPlaybackState.completed)
+        .listen((state) {
+      _handlePlaybackCompleted();
+    });
     await _completer.future;
+    playerStateSubscription.cancel();
     AudioServiceBackground.setState(
-        controls: [], basicState: BasicPlaybackState.playing);
+        controls: [], basicState: BasicPlaybackState.stopped);
   }
+   void _handlePlaybackCompleted() {
+     onStop();
+   }
 
   @override
   Future<void> onStop() async {

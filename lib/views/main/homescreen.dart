@@ -49,43 +49,97 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   getUserData() async {
     final FirebaseUser user = await _auth.currentUser();
-    Firestore.instance
+    QuerySnapshot dataUsers = await Firestore.instance
         .collection('users')
         .where("uid", isEqualTo: user.uid)
-        .snapshots()
-        .listen((data) {
-      if (data.documents.isEmpty) {
-        Firestore.instance.collection('users').document().setData({
-          'uid': user.uid,
-          'numberTrainToday': '0',
-          'numberTrainWeekly': '0',
-          'numberTrainMonthly': '0',
-          'numberTrainLastMonth': '0',
-          'userTarget': '15',          
+        .getDocuments();
+
+    // ทีข้อมูลผู้ใช้
+    if (dataUsers.documents.length > 0) {
+      DocumentSnapshot doc = dataUsers.documents[0];
+
+      // set default by user data
+      setState(() {
+        numberTrainToday = int.parse(doc['numberTrainToday']);
+        numberTrainWeekly = int.parse(doc['numberTrainWeekly']);
+        numberTrainMonthly = int.parse(doc['numberTrainMonthly']);
+        numberTrainLastMonth = int.parse(doc['numberTrainLastMonth']);
+        userTarget = int.parse(doc['userTarget']);
+      });
+
+      // get log
+      DateTime today = DateTime.now();
+      DateTime _firstDayOfTheweek =
+          today.subtract(new Duration(days: today.weekday));
+      QuerySnapshot logTimeByUser = await Firestore.instance
+          .collection('logTime')
+          .where("uid", isEqualTo: user.uid)
+          .where("day", isEqualTo: today.day)
+          .where("month", isEqualTo: today.month)
+          .where("year", isEqualTo: today.year)
+          .getDocuments();
+
+      // ยังไม่มี log
+      if (!(logTimeByUser.documents.length > 0)) {
+        // set today = 0
+        setState(() {
+          numberTrainToday = 0;
         });
-      } else {
-        data.documents.forEach((doc) {
+        // วันแรกของ week ?
+        if (_firstDayOfTheweek.day <= today.day) {
+          // set week = 0
           setState(() {
-            numberTrainToday = int.parse(doc['numberTrainToday']);
-            numberTrainWeekly = int.parse(doc['numberTrainWeekly']);
-            numberTrainMonthly = int.parse(doc['numberTrainMonthly']);
-            numberTrainLastMonth = int.parse(doc['numberTrainLastMonth']);
-            userTarget = int.parse(doc['userTarget']);
-            listViews[1] = DashboardView(
-                animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-                    parent: animationController,
-                    curve: Interval((1 / 4) * 1, 1.0,
-                        curve: Curves.fastOutSlowIn))),
-                animationController: animationController,
-                numberTrainLastMonth: numberTrainLastMonth,
-                numberTrainMonthly: numberTrainMonthly,
-                numberTrainToday: numberTrainToday,
-                numberTrainWeekly: numberTrainWeekly,
-                userTarget: userTarget);
+            numberTrainWeekly = 0;
           });
+        }
+        // TODO : fix bug on set last month
+        if (1 == today.day ) {
+          // move numberTrainMonthly => numberTrainLastMonth
+          // set numberTrainMonthly = 0
+          print("=-=-=-=-=-=-=-=-=-=-=-=");
+          print("1 == today ?");
+          print("=-=-=-=-=-=-=-=-=-=-=-=");
+          setState(() {
+            numberTrainLastMonth = numberTrainMonthly;
+            numberTrainMonthly = 0;
+          });
+        }
+        // update user
+        Firestore.instance
+            .collection('users')
+            .document(dataUsers.documents[0].documentID)
+            .updateData({
+          'numberTrainToday': numberTrainToday.toString(),
+          'numberTrainWeekly': numberTrainWeekly.toString(),
+          'numberTrainMonthly': numberTrainMonthly.toString(),
+          'numberTrainLastMonth': numberTrainLastMonth.toString()
         });
       }
-    });
+
+      // update list
+      setState(() {
+        listViews[1] = DashboardView(
+            animation: Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+                parent: animationController,
+                curve:
+                    Interval((1 / 4) * 1, 1.0, curve: Curves.fastOutSlowIn))),
+            animationController: animationController,
+            numberTrainLastMonth: numberTrainLastMonth,
+            numberTrainMonthly: numberTrainMonthly,
+            numberTrainToday: numberTrainToday,
+            numberTrainWeekly: numberTrainWeekly,
+            userTarget: userTarget);
+      });
+    } else {
+      Firestore.instance.collection('users').document().setData({
+        'uid': user.uid,
+        'numberTrainToday': '0',
+        'numberTrainWeekly': '0',
+        'numberTrainMonthly': '0',
+        'numberTrainLastMonth': '0',
+        'userTarget': '15',
+      });
+    }
   }
 
   @override

@@ -1,9 +1,10 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:meditation/models/hexcode.dart';
 import 'package:meditation/models/list_data.dart';
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:meditation/views/player/review.dart';
 import 'package:sys_volume/flutter_volume.dart';
@@ -15,6 +16,7 @@ import 'package:flare_flutter/flare_actor.dart';
 import 'package:meditation/models/audio_player_task.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -28,18 +30,19 @@ class PlayerScreen extends StatefulWidget {
 class _PlayerScreenState extends State<PlayerScreen> {
   double volume = 0;
 
-  String _countdownAnimation = "countdown"; // idle , countdown
+  // String _countdownAnimation = "countdown"; // idle , countdown
   String _breathingAnimation = "breathing"; // idle , breathing
 
-  bool isCountState = true;
   bool isStart = false;
-  bool isPlayer = false;
+  bool vibrationStatus = false;
+  bool autoExit = false;
 
   Timer _timer;
   int sec = 0;
   int min = 0;
   int hour = 0;
   String userDocId = "";
+  String logTimeDocId = "";
   int numberTrainToday = 0;
   int numberTrainWeekly = 0;
   int numberTrainMonthly = 0;
@@ -47,12 +50,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
-
-    setState(() {
-      isCountState = true;
-      isStart = false;
-      isPlayer = false;
-    });
 
     FlutterVolume.get().then((v) {
       setState(() {
@@ -68,13 +65,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
       enableQueue: true,
     );
 
-    if (AudioService.playbackState != null &&
-        AudioService.playbackState.basicState == BasicPlaybackState.playing) {
-      animationCountToBreath();
-      isPlayer = true;
-    }
-
     getUserDocId();
+    getPrefrerence();
   }
 
   @override
@@ -161,33 +153,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
         fit: StackFit.expand,
         children: <Widget>[
           isStart
-              ? isCountState
-                  ? Container(
-                      width: 80,
-                      child: FlareActor(
-                        "assets/animation/nab3wi.flr",
-                        alignment: Alignment.center,
-                        fit: BoxFit.contain,
-                        animation: _countdownAnimation,
-                      ))
-                  : FlareActor(
-                      "assets/animation/haayai.flr",
-                      alignment: Alignment.center,
-                      fit: BoxFit.contain,
-                      animation: _breathingAnimation,
-                    )
+              ? FlareActor(
+                  "assets/animation/haayai.flr",
+                  alignment: Alignment.center,
+                  fit: BoxFit.contain,
+                  animation: _breathingAnimation,
+                )
               : Container(),
           GestureDetector(
-              onTap: () {
+              onTap: () async {
+                await play();
                 setState(() {
-                  isPlayer = true;
+                  isStart = true;
                 });
-                if (isPlayer) {
-                  play();
-                  startTimer();
-                } else {
-                  //pause();
-                }
+                startTimer();
               },
               child: Container(
                 width: size.width,
@@ -273,7 +252,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
       buttonRadius: 100,
       action: () async {
         setState(() {
-          isCountState = true;
           isStart = false;
         });
         ProgressDialog pr = new ProgressDialog(context);
@@ -351,17 +329,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
     );
   }
 
-  animationCountToBreath() {
-    setState(() {
-      isStart = true;
-    });
-    Future.delayed(Duration(microseconds: 4500), () {
-      setState(() {
-        isCountState = false;
-      });
-    });
-  }
-
   // action
   play() async {
     if (AudioService.running) {
@@ -372,7 +339,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         artist: widget.musicListData.artist,
         artUri: widget.musicListData.imagePath,
       ));
-      AudioService.playFromMediaId(widget.musicListData.music);
+      await AudioService.playFromMediaId(widget.musicListData.music);
     } else {
       await AudioService.start(
         backgroundTaskEntrypoint: _backgroundTaskEntrypoint,
@@ -388,16 +355,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
         artist: widget.musicListData.artist,
         artUri: widget.musicListData.imagePath,
       ));
-      AudioService.playFromMediaId(widget.musicListData.music);
+      await AudioService.playFromMediaId(widget.musicListData.music);
     }
-    animationCountToBreath();
   }
 
   pause() {
     AudioService.pause();
     setState(() {
-      isStart = false;
-      isCountState = true;
+      _breathingAnimation = "idle";
+      // isStart = false;
+      // isCountState = true;
     });
   }
 
@@ -406,34 +373,57 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   saveTime() async {
-    int timeMeditation = min + (hour * 60);
-    print('$timeMeditation');
-    print('$userDocId');
-    // TODO : insert logTime
+    int timeMeditation =  min + (hour * 60);
+    final FirebaseUser user = await _auth.currentUser();
+    if(logTimeDocId == ""){
+      DateTime today = DateTime.now();
+      Firestore.instance.collection('logTime').document().setData({
+        'uid': user.uid,
+        'day': today.day,
+        'month': today.month,
+        'year': today.year,
+        'time': timeMeditation
+      });
+    }else{
+      Firestore.instance.collection('logTime').document(logTimeDocId).updateData({
+        'time': (numberTrainToday + timeMeditation)
+      });
+    }
+
     Firestore.instance.collection('users').document(userDocId).updateData({
       'numberTrainToday': (numberTrainToday + timeMeditation).toString(),
       'numberTrainWeekly': (numberTrainWeekly + timeMeditation).toString(),
       'numberTrainMonthly': (numberTrainMonthly + timeMeditation).toString()
     });
-    
   }
 
   getUserDocId() async {
     final FirebaseUser user = await _auth.currentUser();
-    Firestore.instance
+    QuerySnapshot dataUsers = await Firestore.instance
         .collection('users')
         .where("uid", isEqualTo: user.uid)
-        .snapshots()
-        .listen((data) {
-      data.documents.forEach((doc) {
-        setState(() {
-          userDocId = doc.documentID;
-          numberTrainToday = int.parse(doc['numberTrainToday']);
-          numberTrainWeekly = int.parse(doc['numberTrainWeekly']);
-          numberTrainMonthly = int.parse(doc['numberTrainMonthly']);
-        });
-      });
+        .getDocuments();
+    DocumentSnapshot dataUser = dataUsers.documents[0];
+    setState(() {
+      userDocId = dataUser.documentID;
+      numberTrainToday = int.parse(dataUser['numberTrainToday']);
+      numberTrainWeekly = int.parse(dataUser['numberTrainWeekly']);
+      numberTrainMonthly = int.parse(dataUser['numberTrainMonthly']);
     });
+
+    DateTime today = DateTime.now();
+    QuerySnapshot logTimeByUser = await Firestore.instance
+        .collection('logTime')
+        .where("uid", isEqualTo: user.uid)
+        .where("day", isEqualTo: today.day)
+        .where("month", isEqualTo: today.month)
+        .where("year", isEqualTo: today.year)
+        .getDocuments();
+    if (logTimeByUser.documents.length > 0) {
+      setState(() {
+        logTimeDocId = logTimeByUser.documents[0].documentID;
+      });
+    }
   }
 
   void startTimer() {
@@ -454,7 +444,64 @@ class _PlayerScreenState extends State<PlayerScreen> {
       setState(() {
         sec = sec + 1;
       });
+      /**
+       * vibration
+       */
+      if (vibrationStatus) {
+        if (sec == 1 ||
+            sec == 11 ||
+            sec == 22 ||
+            sec == 33 ||
+            sec == 44 ||
+            sec == 55) {
+          // หายในเข้า
+          Vibration.vibrate(duration: 100);
+        }
+        if (sec == 4 ||
+            sec == 15 ||
+            sec == 26 ||
+            sec == 37 ||
+            sec == 48 ||
+            sec == 59) {
+          //หายใจออก
+          Vibration.vibrate(duration: 100);
+        }
+      }
+
+      /**
+       * auto exit
+       */
+      if (autoExit) {
+        Future.delayed(Duration(seconds: 2), () {
+          if (AudioService.playbackState == null) {
+            ProgressDialog pr = new ProgressDialog(context);
+            pr.style(message: FlutterI18n.translate(context, 'saving'));
+            pr.show();
+            saveTime();
+            Future.delayed(Duration(seconds: 2), () {
+              pr.hide();
+              exit(0);
+            });
+          }
+        });
+      }
     });
+  }
+
+  void getPrefrerence() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var key = "vibrationStatus";
+    if (prefs.getBool(key) != null) {
+      setState(() {
+        vibrationStatus = prefs.getBool(key);
+      });
+    }
+    key = "autoExit";
+    if (prefs.getBool(key) != null) {
+      setState(() {
+        autoExit = prefs.getBool(key);
+      });
+    }
   }
 }
 

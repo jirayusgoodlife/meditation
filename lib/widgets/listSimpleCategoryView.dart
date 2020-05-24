@@ -50,6 +50,7 @@ class _ListSimpleCategoryViewState extends State<ListSimpleCategoryView>
               child: StreamBuilder<QuerySnapshot>(
                   stream: Firestore.instance
                       .collection('music')
+                      .orderBy("startColor",descending: false)
                       .limit(4)
                       .snapshots(),
                   builder: (BuildContext context,
